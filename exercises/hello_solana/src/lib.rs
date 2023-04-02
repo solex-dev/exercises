@@ -9,6 +9,7 @@ fn process_instruction(
     accounts: &[AccountInfo],
     instruction_data: &[u8],
 ) -> ProgramResult {
-    msg!("gm, {}", "solana");
+    // TODO: Implement the program
+    msg!("gm, {}", "???");
     Ok(())
 }
