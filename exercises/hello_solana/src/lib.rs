@@ -9,7 +9,7 @@ fn process_instruction(
     accounts: &[AccountInfo],
     instruction_data: &[u8],
 ) -> ProgramResult {
-    // TODO: Implement the program
+    // TODO: Change the placeholder "???" to any message you like
     msg!("gm, {}", "???");
     Ok(())
 }

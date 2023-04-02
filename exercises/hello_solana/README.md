@@ -4,15 +4,15 @@ The `hello_solana` program teaches how to log messages when invoked.
 
 ## How the program works
 
-If you look at the program code, you'll see that it has a single function `process_instruction`. The function takes three arguments: `program_id`, `accounts` and `instruction_data`. The `program_id` is the public key of the program. The `accounts` is an array of accounts that are passed to the program. The `instruction_data` is the data that is passed to the program, it is passed as an array of bytes.
+If you look at the program code, you'll see that it has a single function `process_instruction`. The function takes three arguments: `program_id`, `accounts` and `instruction_data`. The `program_id` is the public key of the program. The `accounts` is an array of accounts that are passed to the program. The `instruction_data` is the data that is passed into the instruction's data, it is passed as an array of bytes.
 
 The `process_instruction` function is passed to the `entrypoint!` macro which tells Solana that `process_instruction` is the entrypoint of the program.
 
-In the program we are using the `msg!` macro to log the message "gm, solana" to the console. It takes a single argument which is the message to be logged. This function returns a `ProgramResult` which a generic type of `Result`.
+In the program we are using thezx `msg!` macro to log the message "gm, solana" to the console. It takes a single argument which is the message to be logged. This function returns a `ProgramResult` which a generic type of `Result`.
 
 ## Exercise
 
-The current program logs gm, ??? to the console. Your task is to change the message to gm, solana.
+The current program logs gm, ??? to the console. Your task is to change the message to any message of your choice.
 
 ## Running the program
 
