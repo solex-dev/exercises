@@ -4,7 +4,7 @@ The `process_instruction` program teaches how to process instructions in a solan
 
 ## How the program works
 
-If you look at the program code you'll see that we have created a new struct `InstructionData` which defines the instruction data. In our case we have added name and age fields.
+If you look at the program code you'll see that we have created a new struct `InstructionData` which defines the instruction data. In our case we have added name and age fields. We are using the `BorshSerialize` and `BorshDeserialize` traits to serialize and deserialize the instruction data.
 
 ```rust
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
@@ -14,13 +14,13 @@ pub struct InstructionData {
 }
 ```
 
-In the program we can access the instruction data by using the `try_from_slice` method of the `InstructionData` struct.
+In the program we can access the instruction data by using the `try_from_slice` method of the `InstructionData` struct. `try_from_slice` returns a `Result` enum and wer unwrap the result to get the `InstructionData`.
 
 ```rust
     let instruction_data_object = InstructionData::try_from_slice(&instruction_data)?
 ```
 
-We later use this object to welcome the user.
+We later use this `instruction_data_object` to welcome the user.
 
 ```rust
     msg!("Welcome to the bar, {}", "???");
@@ -28,7 +28,13 @@ We later use this object to welcome the user.
 
 You need to replace the `???` with the name of the user.
 
-After welcoming the user, we need to check if the user is of age 18 or above. If the user is of age 18 or above, then we need to print a message saying "You can drink". If the user is below 18, then we need to print a message saying "You can't drink".
+After welcoming the user, we need to check if the user is of age 18 or above. If the user is of age 18 or above, then we need to log a message saying "You can drink". If the user is below 18, then we need to log a message saying "You can't drink". We do this using the `Errors::Ineligible` enum.
+
+```rust
+    if instruction_data_object.age < 18 {
+        return Err(Errors::Ineligible.into());
+    }
+```
 
 We have already created the Errors Enum and impl here:
 
@@ -45,10 +51,6 @@ impl From<Errors> for ProgramError {
     }
 }
 ```
-
-## Exercise
-
-You need to first update the greeting to show the name of the user and then you need to write an if statement to check if the user is of age 18 or above. If the user is of age 18 or above, then you need to print a message saying "You can drink". If the user is below 18, then you need to print a message saying "You can't drink".
 
 ## Running the program
 
@@ -76,12 +78,12 @@ solana program deploy exercises/processing_instructions/dist/program/processing_
 
 Replace <path_to_deployer_keypair> with the path to your solana keypair or remove it if you want to use your default keypair.
 
-### 7. Test the exercise
+### 3. Test the exercise
 
 To test the exercise, use the following command:
 
 ```bash
-cargo run -- run -e hello-solana -k <path_to_payer_keypair> -p exercises/processing_instructions/dist/solana/processing_instructions-keypair.json
+cargo run -- run -e processing_instructions -k <path_to_payer_keypair> -p exercises/processing_instructions/dist/solana/processing_instructions-keypair.json
 ```
 
 Replace <path_to_payer_keypair> with the path to the keypair which would pay the transaction fees
