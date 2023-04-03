@@ -14,7 +14,7 @@ pub struct InstructionData {
 }
 ```
 
-In the program we can access the instruction data by using the `try_from_slice_unchecked` method of the `InstructionData` struct.
+In the program we can access the instruction data by using the `try_from_slice` method of the `InstructionData` struct.
 
 ```rust
     let instruction_data_object = InstructionData::try_from_slice(&instruction_data)?
