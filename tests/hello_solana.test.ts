@@ -14,7 +14,7 @@ function createKeypairFromFile(path: string): Keypair {
   );
 }
 
-test("hello-solana", async () => {
+test("hello_solana", async () => {
   if (!(process.env.KEYPAIR || process.env.PROGRAM_PATH)) {
     new Error("Missing required parameters");
   }

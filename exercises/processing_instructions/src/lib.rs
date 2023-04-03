@@ -12,17 +12,12 @@ fn process_instruction(
     _accounts: &[AccountInfo],
     instruction_data: &[u8],
 ) -> ProgramResult {
-    let instruction_data_object = Box::new(InstructionData::try_from_slice(&instruction_data)?);
+    let instruction_data_object = InstructionData::try_from_slice(&instruction_data)?
 
     // TODO: Use the `msg!` macro to welcome the customer to the bar
-    msg!("Welcome to the bar, {}", instruction_data_object.name);
+    msg!("Welcome to the bar, {}", "???");
     // TODO: Check if the age of the customer is over 18 to drink beer
-    if instruction_data_object.age >= 18 {
-        msg!("You're eligible to drink beer")
-    } else {
-        msg!("You're not eligible to drink beer");
-        return Err(Errors::Ineligible.into());
-    }
+    // TODO: Return Errors::Ineligible if the customer is not eligible
     Ok(())
 }
 

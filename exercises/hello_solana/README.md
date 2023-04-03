@@ -8,7 +8,7 @@ If you look at the program code, you'll see that it has a single function `proce
 
 The `process_instruction` function is passed to the `entrypoint!` macro which tells Solana that `process_instruction` is the entrypoint of the program.
 
-In the program we are using thezx `msg!` macro to log the message "gm, solana" to the console. It takes a single argument which is the message to be logged. This function returns a `ProgramResult` which a generic type of `Result`.
+In the program we are using the `msg!` macro to log the message "gm, solana" to the console. It takes a single argument which is the message to be logged. This function returns a `ProgramResult` which a generic type of `Result`.
 
 ## Exercise
 
@@ -74,7 +74,7 @@ Replace <path_to_deployer_keypair> with the path to your solana keypair or remov
 To test the exercise, use the following command:
 
 ```bash
-cargo run -- run -e hello-solana -k <path_to_payer_keypair> -p exercises/hello_solana/dist/solana/hello_solana-keypair.json
+cargo run -- run -e hello_solana -k <path_to_payer_keypair> -p exercises/hello_solana/dist/solana/hello_solana-keypair.json
 ```
 
 Replace <path_to_payer_keypair> with the path to the keypair which would pay the transaction fees
