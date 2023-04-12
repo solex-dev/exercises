@@ -12,7 +12,7 @@ fn process_instruction(
     _accounts: &[AccountInfo],
     instruction_data: &[u8],
 ) -> ProgramResult {
-    let instruction_data_object = InstructionData::try_from_slice(&instruction_data)?
+    let instruction_data_object = InstructionData::try_from_slice(&instruction_data)?;
 
     // TODO: Use the `msg!` macro to welcome the customer to the bar
     msg!("Welcome to the bar, {}", "???");
