@@ -74,7 +74,7 @@ Replace <path_to_deployer_keypair> with the path to your solana keypair or remov
 To test the exercise, use the following command:
 
 ```bash
-cargo run -- run -e hello_solana -k <path_to_payer_keypair> -p exercises/hello_solana/dist/solana/hello_solana-keypair.json
+./solana_exercises run -e hello_solana -p exercises/hello_solana/dist/program/hello_solana-keypair.json -k ~/.config/solana/id.json
 ```
 
 Replace <path_to_payer_keypair> with the path to the keypair which would pay the transaction fees
