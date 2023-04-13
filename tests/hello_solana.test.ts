@@ -1,18 +1,12 @@
 import {
   clusterApiUrl,
   Connection,
-  Keypair,
   sendAndConfirmTransaction,
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
 import { test } from "vitest";
-
-function createKeypairFromFile(path: string): Keypair {
-  return Keypair.fromSecretKey(
-    Buffer.from(JSON.parse(require("fs").readFileSync(path, "utf-8")))
-  );
-}
+import { createKeypairFromFile } from "./utils";
 
 test("hello_solana", async () => {
   if (!(process.env.KEYPAIR || process.env.PROGRAM_PATH)) {

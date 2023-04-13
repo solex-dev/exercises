@@ -10,5 +10,8 @@
     "@solana/web3.js": "^1.74.0",
     "bn.js": "^5.2.1",
     "borsh": "^0.7.0"
+  },
+  "scripts": {
+    "test": "KEYPAIR=~/.config/solana/id.json PROGRAM_PATH=exercises/counter/dist/program/counter-keypair.json vitest run counter.test.ts"
   }
 }

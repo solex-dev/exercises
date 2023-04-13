@@ -1,7 +1,6 @@
 import {
   clusterApiUrl,
   Connection,
-  Keypair,
   sendAndConfirmTransaction,
   SendTransactionError,
   Transaction,
@@ -10,12 +9,7 @@ import {
 import { serialize } from "borsh";
 import { Buffer } from "buffer";
 import { test } from "vitest";
-
-function createKeypairFromFile(path: string): Keypair {
-  return Keypair.fromSecretKey(
-    Buffer.from(JSON.parse(require("fs").readFileSync(path, "utf-8")))
-  );
-}
+import { createKeypairFromFile } from "./utils";
 
 interface IProperties {
   name: string;

@@ -10,14 +10,9 @@ import {
 } from "@solana/web3.js";
 
 import { PublicKey } from "@solana/web3.js";
-import { assert, suite, test } from "vitest";
 import BN from "bn.js";
-
-function createKeypairFromFile(path: string): Keypair {
-  return Keypair.fromSecretKey(
-    Buffer.from(JSON.parse(require("fs").readFileSync(path, "utf-8")))
-  );
-}
+import { assert, suite, test } from "vitest";
+import { createKeypairFromFile } from "./utils";
 
 const program = createKeypairFromFile(process.env.PROGRAM_PATH!);
 const PROGRAM_ID = program.publicKey;
@@ -41,11 +36,9 @@ function deserializeCounterAccount(data: Buffer): Counter {
 type IncrementInstructionAccounts = {
   counter: PublicKey;
 };
-type IncrementInstructionArgs = {};
 
 const createIncrementInstruction = (
-  accounts: IncrementInstructionAccounts,
-  args: IncrementInstructionArgs
+  accounts: IncrementInstructionAccounts
 ): TransactionInstruction => {
   return new TransactionInstruction({
     programId: PROGRAM_ID,
@@ -86,10 +79,9 @@ suite("counter_program", () => {
       space: COUNTER_ACCOUNT_SIZE,
       programId: PROGRAM_ID,
     });
-    const incrementIx: TransactionInstruction = createIncrementInstruction(
-      { counter },
-      {}
-    );
+    const incrementIx: TransactionInstruction = createIncrementInstruction({
+      counter,
+    });
     let tx = new Transaction().add(allocIx).add(incrementIx);
 
     // Explicitly set the feePayer to be our wallet (this is set to first signer by default)
@@ -168,10 +160,9 @@ suite("counter_program", () => {
     console.log(`[allocate] count is: ${counterAccount.count.toNumber()}`);
 
     // Check increment tx
-    const incrementIx: TransactionInstruction = createIncrementInstruction(
-      { counter },
-      {}
-    );
+    const incrementIx: TransactionInstruction = createIncrementInstruction({
+      counter,
+    });
     tx = new Transaction().add(incrementIx);
     tx.feePayer = payer;
     tx.recentBlockhash = (
