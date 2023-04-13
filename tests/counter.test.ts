@@ -5,6 +5,7 @@ import {
   SystemProgram,
   Transaction,
   TransactionInstruction,
+  clusterApiUrl,
   sendAndConfirmTransaction,
 } from "@solana/web3.js";
 
@@ -54,10 +55,10 @@ const createIncrementInstruction = (
   });
 };
 
-test("Counter Solana Native", () => {
-  const connection = new Connection("http://localhost:8899");
+suite("counter", () => {
+  const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
 
-  suite("Test allocate counter + increment tx", async () => {
+  test("Test allocate counter + increment tx", async () => {
     // Randomly generate our wallet
     const payerKeypair = Keypair.generate();
     const payer = payerKeypair.publicKey;
@@ -118,7 +119,7 @@ test("Counter Solana Native", () => {
       `[alloc+increment] count is: ${counterAccount.count.toNumber()}`
     );
   });
-  suite("Test allocate tx and increment tx", async () => {
+  test("Test allocate tx and increment tx", async () => {
     const payerKeypair = Keypair.generate();
     const payer = payerKeypair.publicKey;
 
