@@ -13,9 +13,14 @@ import { PublicKey } from "@solana/web3.js";
 import { assert, suite, test } from "vitest";
 import BN from "bn.js";
 
-const PROGRAM_ID = new PublicKey(
-  "9CGjruhLYp6F4iN7v4xtXua1kVNh559C84kbPamZgn5C"
-);
+function createKeypairFromFile(path: string): Keypair {
+  return Keypair.fromSecretKey(
+    Buffer.from(JSON.parse(require("fs").readFileSync(path, "utf-8")))
+  );
+}
+
+const program = createKeypairFromFile(process.env.PROGRAM_PATH!);
+const PROGRAM_ID = program.publicKey;
 
 type Counter = {
   count: BN;
@@ -55,7 +60,7 @@ const createIncrementInstruction = (
   });
 };
 
-suite("counter", () => {
+suite("counter_program", () => {
   const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
 
   test("Test allocate counter + increment tx", async () => {
