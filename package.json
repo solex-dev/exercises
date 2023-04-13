@@ -8,5 +8,8 @@
     "@dao-xyz/borsh": "^5.1.5",
     "@solana/web3.js": "^1.74.0",
     "borsh": "^0.7.0"
+  },
+  "scripts": {
+    "test": "KEYPAIR=~/.config/solana/id.json PROGRAM_PATH=exercises/counter/dist/program/counter-keypair.json vitest run counter.test.ts"
   }
 }
