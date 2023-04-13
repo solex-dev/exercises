@@ -1,114 +1,191 @@
 import {
-  clusterApiUrl,
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
-  sendAndConfirmTransaction,
+  SystemProgram,
   Transaction,
   TransactionInstruction,
+  sendAndConfirmTransaction,
 } from "@solana/web3.js";
-import { test } from "vitest";
 
-function createKeypairFromFile(path: string): Keypair {
-  return Keypair.fromSecretKey(
-    Buffer.from(JSON.parse(require("fs").readFileSync(path, "utf-8")))
-  );
-}
+import { PublicKey } from "@solana/web3.js";
+import { assert, suite, test } from "vitest";
+import BN from "bn.js";
 
-test("counter", async () => {
-  if (!(process.env.KEYPAIR || process.env.PROGRAM_PATH)) {
-    new Error("Missing required parameters");
+const PROGRAM_ID = new PublicKey(
+  "9CGjruhLYp6F4iN7v4xtXua1kVNh559C84kbPamZgn5C"
+);
+
+type Counter = {
+  count: BN;
+};
+
+const COUNTER_ACCOUNT_SIZE = 8;
+
+function deserializeCounterAccount(data: Buffer): Counter {
+  if (data.byteLength !== 8) {
+    throw Error("Need exactly 8 bytes to deserialize counter");
   }
 
-  const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
-  const payer = createKeypairFromFile(process.env.KEYPAIR!);
-  const program = createKeypairFromFile(process.env.PROGRAM_PATH!);
+  return {
+    count: new BN(data, "le"),
+  };
+}
 
-  await connection.requestAirdrop(payer.publicKey, LAMPORTS_PER_SOL);
+type IncrementInstructionAccounts = {
+  counter: PublicKey;
+};
+type IncrementInstructionArgs = {};
 
-  let instruction = new TransactionInstruction({
-    keys: [{ pubkey: payer.publicKey, isSigner: true, isWritable: true }],
-    programId: program.publicKey,
-    data: Buffer.alloc(0),
-  });
-
-  const incrementInstructionAccounts = new TransactionInstruction({
-    programId: program.publicKey,
+const createIncrementInstruction = (
+  accounts: IncrementInstructionAccounts,
+  args: IncrementInstructionArgs
+): TransactionInstruction => {
+  return new TransactionInstruction({
+    programId: PROGRAM_ID,
     keys: [
       {
-        pubkey: payer.publicKey,
+        pubkey: accounts.counter,
         isSigner: false,
         isWritable: true,
       },
     ],
     data: Buffer.from([0x0]),
   });
+};
 
-  const decrementInstructionAccounts = new TransactionInstruction({
-    programId: program.publicKey,
-    keys: [
-      {
-        pubkey: payer.publicKey,
-        isSigner: false,
-        isWritable: true,
-      },
-    ],
-    data: Buffer.from([0x1]),
+test("Counter Solana Native", () => {
+  const connection = new Connection("http://localhost:8899");
+
+  suite("Test allocate counter + increment tx", async () => {
+    // Randomly generate our wallet
+    const payerKeypair = Keypair.generate();
+    const payer = payerKeypair.publicKey;
+
+    // Randomly generate the account key
+    // to sign for setting up the Counter state
+    const counterKeypair = Keypair.generate();
+    const counter = counterKeypair.publicKey;
+
+    // Airdrop our wallet 1 Sol
+    await connection.requestAirdrop(payer, LAMPORTS_PER_SOL);
+
+    // Create a TransactionInstruction to interact with our counter program
+    const allocIx: TransactionInstruction = SystemProgram.createAccount({
+      fromPubkey: payer,
+      newAccountPubkey: counter,
+      lamports: await connection.getMinimumBalanceForRentExemption(
+        COUNTER_ACCOUNT_SIZE
+      ),
+      space: COUNTER_ACCOUNT_SIZE,
+      programId: PROGRAM_ID,
+    });
+    const incrementIx: TransactionInstruction = createIncrementInstruction(
+      { counter },
+      {}
+    );
+    let tx = new Transaction().add(allocIx).add(incrementIx);
+
+    // Explicitly set the feePayer to be our wallet (this is set to first signer by default)
+    tx.feePayer = payer;
+
+    // Fetch a "timestamp" so validators know this is a recent transaction
+    tx.recentBlockhash = (
+      await connection.getLatestBlockhash("confirmed")
+    ).blockhash;
+
+    // Send transaction to network (local network)
+    await sendAndConfirmTransaction(
+      connection,
+      tx,
+      [payerKeypair, counterKeypair],
+      { skipPreflight: true, commitment: "confirmed" }
+    );
+
+    // Get the counter account info from network
+    const counterAccountInfo = await connection.getAccountInfo(counter, {
+      commitment: "confirmed",
+    });
+    assert(counterAccountInfo, "Expected counter account to have been created");
+
+    // Deserialize the counter & check count has been incremented
+    const counterAccount = deserializeCounterAccount(counterAccountInfo.data);
+    assert(
+      counterAccount.count.toNumber() === 1,
+      "Expected count to have been 1"
+    );
+    console.log(
+      `[alloc+increment] count is: ${counterAccount.count.toNumber()}`
+    );
   });
+  suite("Test allocate tx and increment tx", async () => {
+    const payerKeypair = Keypair.generate();
+    const payer = payerKeypair.publicKey;
 
-  const signature = await sendAndConfirmTransaction(
-    connection,
-    new Transaction().add(instruction),
-    [payer]
-  );
+    const counterKeypair = Keypair.generate();
+    const counter = counterKeypair.publicKey;
 
-  const transaction = await connection.getParsedTransaction(signature, {
-    maxSupportedTransactionVersion: 0,
+    await connection.requestAirdrop(payer, LAMPORTS_PER_SOL);
+
+    // Check allocate tx
+    const allocIx: TransactionInstruction = SystemProgram.createAccount({
+      fromPubkey: payer,
+      newAccountPubkey: counter,
+      lamports: await connection.getMinimumBalanceForRentExemption(
+        COUNTER_ACCOUNT_SIZE
+      ),
+      space: COUNTER_ACCOUNT_SIZE,
+      programId: PROGRAM_ID,
+    });
+    let tx = new Transaction().add(allocIx);
+    tx.feePayer = payer;
+    tx.recentBlockhash = (
+      await connection.getLatestBlockhash("confirmed")
+    ).blockhash;
+    await sendAndConfirmTransaction(
+      connection,
+      tx,
+      [payerKeypair, counterKeypair],
+      { skipPreflight: true, commitment: "confirmed" }
+    );
+
+    let counterAccountInfo = await connection.getAccountInfo(counter, {
+      commitment: "confirmed",
+    });
+    assert(counterAccountInfo, "Expected counter account to have been created");
+
+    let counterAccount = deserializeCounterAccount(counterAccountInfo.data);
+    assert(
+      counterAccount.count.toNumber() === 0,
+      "Expected count to have been 0"
+    );
+    console.log(`[allocate] count is: ${counterAccount.count.toNumber()}`);
+
+    // Check increment tx
+    const incrementIx: TransactionInstruction = createIncrementInstruction(
+      { counter },
+      {}
+    );
+    tx = new Transaction().add(incrementIx);
+    tx.feePayer = payer;
+    tx.recentBlockhash = (
+      await connection.getLatestBlockhash("confirmed")
+    ).blockhash;
+    await sendAndConfirmTransaction(connection, tx, [payerKeypair], {
+      skipPreflight: true,
+      commitment: "confirmed",
+    });
+
+    counterAccountInfo = await connection.getAccountInfo(counter, {
+      commitment: "confirmed",
+    });
+    assert(counterAccountInfo, "Expected counter account to have been created");
+
+    counterAccount = deserializeCounterAccount(counterAccountInfo.data);
+    assert(
+      counterAccount.count.toNumber() === 1,
+      "Expected count to have been 1"
+    );
+    console.log(`[increment] count is: ${counterAccount.count.toNumber()}`);
   });
-
-  const logs = transaction?.meta?.logMessages;
-  const counter = logs?.[0].split(" ")[1];
-
-  const incrementSignature = await sendAndConfirmTransaction(
-    connection,
-    new Transaction().add(incrementInstructionAccounts),
-    [payer]
-  );
-
-  const incrementTransaction = await connection.getParsedTransaction(
-    incrementSignature,
-    {
-      maxSupportedTransactionVersion: 0,
-    }
-  );
-
-  const incrementLogs = incrementTransaction?.meta?.logMessages;
-  const incrementCounter = incrementLogs?.[0].split(" ")[1];
-
-  const decrementSignature = await sendAndConfirmTransaction(
-    connection,
-    new Transaction().add(decrementInstructionAccounts),
-    [payer]
-  );
-
-  const decrementTransaction = await connection.getParsedTransaction(
-    decrementSignature,
-    {
-      maxSupportedTransactionVersion: 0,
-    }
-  );
-
-  const decrementLogs = decrementTransaction?.meta?.logMessages;
-  const decrementCounter = decrementLogs?.[0].split(" ")[1];
-
-  if (logs?.length == 0) {
-    new Error("No transaction logs");
-  }
-
-  console.log(`Signature - ${signature}`);
-  console.log(`Counter - ${counter}`);
-  console.log(`Increment Signature - ${incrementSignature}`);
-  console.log(`Increment Counter - ${incrementCounter}`);
-  console.log(`Decrement Signature - ${decrementSignature}`);
-  console.log(`Decrement Counter - ${decrementCounter}`);
 });
