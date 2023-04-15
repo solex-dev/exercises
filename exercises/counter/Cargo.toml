@@ -6,3 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+borsh = "0.10.3"
+solana-program = "1.15.2"
+thiserror = "1.0.40"
+
+[lib]
+crate-type = ["cdylib", "lib"]
