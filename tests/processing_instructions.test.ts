@@ -94,9 +94,9 @@ test("processing-instructions", async () => {
     if (err instanceof SendTransactionError) {
       const error = `Program ${program.publicKey.toString()} failed: custom program error: 0x0`;
       if (err.logs?.includes(error)) {
-        return 0;
+        return true;
       } else {
-        return 1;
+        return false;
       }
     }
   }
