@@ -79,12 +79,17 @@ test("processing-instructions", async () => {
     data: jimmy.toBuffer(),
   });
 
+  const mary_transaction = new Transaction().add(mary_instruction);
+  const jimmy_transaction = new Transaction().add(jimmy_instruction);
+
+  await sendAndConfirmTransaction(connection, mary_transaction, [payer], {
+    commitment: "confirmed",
+  });
+
   try {
-    await sendAndConfirmTransaction(
-      connection,
-      new Transaction().add(mary_instruction).add(jimmy_instruction),
-      [payer]
-    );
+    await sendAndConfirmTransaction(connection, jimmy_transaction, [payer], {
+      commitment: "confirmed",
+    });
   } catch (err) {
     if (err instanceof SendTransactionError) {
       const error = `Program ${program.publicKey.toString()} failed: custom program error: 0x0`;
